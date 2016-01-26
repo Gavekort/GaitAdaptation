@@ -1,0 +1,6 @@
+.waf*
+build/
+bld/
+*.pyc
+tags
+

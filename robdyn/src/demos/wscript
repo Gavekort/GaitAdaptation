@@ -1,0 +1,10 @@
+
+#! /usr/bin/env python
+def build(bld):
+    obj = bld.new_task_gen('cxx', 'program')
+    obj.source = 'gatest.cpp'
+    obj.includes = '. ../../'
+    obj.uselib_local = 'sferes2'
+    obj.uselib = 'eigen'
+    obj.target = 'gatest'
+    obj.uselib_local = 'sferes2'
