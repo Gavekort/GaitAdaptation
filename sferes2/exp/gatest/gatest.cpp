@@ -50,8 +50,8 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
         FitZDT2()  {}
         template<typename Indiv>
             void eval(Indiv& ind) {
-                Simulation sim;
-                this->_value = sim.run(ind, 0.004f);
+                Simulation sim(0.0f);
+                this->_value = sim.run(ind, 0.004f, 2);
             }
 };
 

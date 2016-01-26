@@ -12,22 +12,15 @@
 #include <ode/object.hh>
 #include <renderer/osg_visitor.hh>
 
-Simulation::Simulation()
-{
+Simulation::Simulation(float tilt) : env(tilt, 0.0f, 0.0f), rob(env, Eigen::Vector3d(0, 0, 0.5)) {
     std::cout << "Initing new ODE" << std::endl;
     dInitODE2(0);
 
-    v = new renderer::OsgVisitor;
-    env = new ode::Environment(0.0f, 0.0f, 0.0f);
-    rob = new robot::robot4(*env, Eigen::Vector3d(0, 0, 0.5));
-
-    rob->accept(*v);
-    env->set_gravity(0, 0, -9.81);
+    rob.accept(v);
+    env.set_gravity(0, 0, -9.81);
 }
 Simulation::~Simulation(){
-    std::cout << "Destroying ODE" << std::endl;
     dCloseODE();
-    delete v;
 }
 /*
 void Simulation::add_blocks(int count, int size, ode::Environment& env){
