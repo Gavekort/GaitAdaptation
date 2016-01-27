@@ -32,10 +32,10 @@ class Simulation{
  * (R)ight/(L)eft
  * 0 - main/mid SWEEP
  * 1 - mid/rear SWEEP
- * 2 - F U R SWEEP
- * 3 - F L R DIHED
- * 4 - R U R SWEEP
- * 5 - R L R DIHED
+ * 2 - F U R SWEEP 6
+ * 3 - F L R DIHED 7
+ * 4 - R U R SWEEP 8
+ * 5 - R L R DIHED 9
  * 6 - F U L SWEEP
  * 7 - F L L DIHED
  * 8 - R U L SWEEP
@@ -53,7 +53,7 @@ float Simulation::run(Indiv ind, const float step, const int step_limit){
         }
     }
     Eigen::Vector3d pos = rob.pos();
-    float fitness = std::abs(pos(0)) + std::abs(pos(1)) + std::abs(pos(2)); //Dirty?
+    float fitness = std::abs(pos(0)) + std::abs(pos(1)); //Dirty?
     std::cout << "Fitness: " << fitness << std::endl;
     return fitness;
 
@@ -62,25 +62,29 @@ float Simulation::run(Indiv ind, const float step, const int step_limit){
 template<typename Indiv>
 void Simulation::procedure(Indiv ind, const float step){
     x += step;
+    //rob.bodies()[1]->fix();
     if(!headless) {
         v->update();
     }
     env.next_step(step);
     rob.next_step(step);
     int genptr = 0;
-    for (size_t i = 0; i < rob.servos().size(); ++i){
+    for (size_t i = 0; i < rob.servos().size() - 4; ++i){
         float a = ind.data(genptr++) * 20.0f;
         float theta = ind.data(genptr++) * 1.0f;
         float b = ind.data(genptr++) * 20.0f;;
         //std::cout << "Servo(" << i << "): " << a << " " << theta << " " << b << std::endl;
         float h = 4;
         float f = 2;
+
         double phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
-        if(i <= 1){
-            rob.servos()[i]->set_angle(ode::Servo::SWEEP, phase * M_PI/180); // -2 to 2 is approx 180 deg
+        if(i <= 1){ //body joints only
+            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase);
         }else{
-            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase);
+            rob.servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase); //and opposite for other side
         }
+    Eigen::Vector3d pos = rob.pos();
     }
 }
 #endif

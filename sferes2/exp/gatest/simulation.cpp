@@ -25,6 +25,9 @@ Simulation::Simulation(const float tilt, const bool headless) : env(tilt, 0.0f, 
 
 
 Simulation::~Simulation(){
+    if(!headless){
+    delete v;
+    }
 }
 /*
    void Simulation::add_blocks(int count, int size, ode::Environment& env){

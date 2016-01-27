@@ -52,7 +52,7 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
             void eval(Indiv& ind) {
                 this->_objs.resize(2);
                 Simulation sim(0.0f, headless);
-                this->_value = sim.run(ind, 0.008f, 2);
+                this->_value = sim.run(ind, 0.008f, 4);
             }
 };
 
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     std::cout<<"running "<<argv[0]<<" ... try --help for options (verbose)"<<std::endl;
     //headless = atoi(argv[1]);
 
-    typedef gen::EvoFloat<30, Params> gen_t;
+    typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
     typedef eval::Eval<Params> eval_t;
     typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
