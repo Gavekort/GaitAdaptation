@@ -52,7 +52,7 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
             void eval(Indiv& ind) {
                 this->_objs.resize(2);
                 Simulation sim(0.0f, headless);
-                this->_value = sim.run(ind, 0.008f, 4);
+                this->_value = sim.run(ind, 0.004f, 4);
             }
 };
 

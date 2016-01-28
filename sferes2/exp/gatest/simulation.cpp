@@ -16,7 +16,8 @@ Simulation::Simulation(const float tilt, const bool headless) : env(tilt, 0.0f, 
     this->headless = headless;
 
     if(!headless){
-        v = new renderer::OsgVisitor;
+        //std::unique_ptr<renderer::OsgVisitor> v();
+        this->v.reset(new renderer::OsgVisitor());
         rob.accept(*v);
     }
 
@@ -25,9 +26,6 @@ Simulation::Simulation(const float tilt, const bool headless) : env(tilt, 0.0f, 
 
 
 Simulation::~Simulation(){
-    if(!headless){
-    delete v;
-    }
 }
 /*
    void Simulation::add_blocks(int count, int size, ode::Environment& env){

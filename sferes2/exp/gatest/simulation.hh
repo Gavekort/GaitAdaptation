@@ -1,6 +1,8 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
+#include <stdlib.h> //For EXIT_SUCCESS
+
 #include <sferes/gen/evo_float.hpp>
 #include <sferes/ea/nsga2.hpp>
 
@@ -12,7 +14,7 @@
 
 class Simulation{
     private:
-        renderer::OsgVisitor* v;
+        std::unique_ptr<renderer::OsgVisitor> v;
         ode::Environment env;
         robot::robot4 rob;
         bool headless;
@@ -43,20 +45,20 @@ class Simulation{
  */
 template<typename Indiv>
 float Simulation::run(Indiv ind, const float step, const int step_limit){
-    if(headless){
-        while(x < step_limit) {
-            procedure(ind, step);
+    while(x < step_limit) {
+        if(!headless){
+            if(v->done()){ //If user presses escape in window
+                exit(EXIT_SUCCESS); //abort everything including sferes-backend
+            }
         }
-    }else{
-        while(!v->done() && x < step_limit) {
-            procedure(ind, step);
-        }
+
+        procedure(ind, step);
     }
+
     Eigen::Vector3d pos = rob.pos();
     float fitness = std::abs(pos(0)) + std::abs(pos(1)); //Dirty?
     std::cout << "Fitness: " << fitness << std::endl;
     return fitness;
-
 }
 
 template<typename Indiv>
@@ -70,7 +72,7 @@ void Simulation::procedure(Indiv ind, const float step){
     rob.next_step(step);
     int genptr = 0;
     for (size_t i = 0; i < rob.servos().size() - 4; ++i){
-        float a = ind.data(genptr++) * 20.0f;
+        float a = ind.data(genptr++) * 40.0f;
         float theta = ind.data(genptr++) * 1.0f;
         float b = ind.data(genptr++) * 20.0f;;
         //std::cout << "Servo(" << i << "): " << a << " " << theta << " " << b << std::endl;
@@ -79,12 +81,11 @@ void Simulation::procedure(Indiv ind, const float step){
 
         double phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
         if(i <= 1){ //body joints only
-            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase);
+            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
         }else{
-            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase);
-            rob.servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase); //and opposite for other side
+            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+            rob.servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180); //and opposite for other side
         }
-    Eigen::Vector3d pos = rob.pos();
     }
 }
 #endif
