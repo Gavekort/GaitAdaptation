@@ -12,44 +12,41 @@
 #include <ode/object.hh>
 #include <renderer/osg_visitor.hh>
 
-Simulation::Simulation()
-{
-    std::cout << "Initing new ODE" << std::endl;
-    dInitODE2(0);
+Simulation::Simulation(const float tilt, const int count, const int size,
+        const bool headless) : env(tilt, 0.0f, 0.0f), rob(env, Eigen::Vector3d(0, 0, 0.5)){
+    this->headless = headless;
 
-    v = new renderer::OsgVisitor;
-    env = new ode::Environment(0.0f, 0.0f, 0.0f);
-    rob = new robot::robot4(*env, Eigen::Vector3d(0, 0, 0.5));
+    if(!headless){
+        this->v.reset(new renderer::OsgVisitor()); //assures that v is updated
+        rob.accept(*v);
+    }
 
-    rob->accept(*v);
-    env->set_gravity(0, 0, -9.81);
+    env.set_gravity(0, 0, -9.81);
+    add_blocks(count, size);
 }
+
+
 Simulation::~Simulation(){
-    std::cout << "Destroying ODE" << std::endl;
-    dCloseODE();
-    delete v;
 }
-/*
-void Simulation::add_blocks(int count, int size, ode::Environment& env){
+
+void Simulation::add_blocks(int count, int size){
     typedef boost::mt19937 RNGType;
     RNGType rng( time(0) );
     boost::uniform_real<> loc_range(-3,3);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rlocation(rng,loc_range);
     boost::uniform_real<> size_range(0.001, (float) size/100);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rsize(rng,size_range);
-    std::vector<ode::Object::ptr_t> g;
     double bsize;
     for(int i = 0; i < count; ++i){
         bsize = rsize();
         ode::Object::ptr_t b
             (new ode::Box(env, Eigen::Vector3d(rlocation(), rlocation(), bsize/2),
                           10, bsize, bsize, bsize));
-        g.push_back(b);
-        b->accept(v);
+        boxes.push_back(b);
+        if(!headless){
+            b->accept(*v);
+        }
         b->fix();
         env.add_to_ground(*b);
     }
 }
-*/
-
-
