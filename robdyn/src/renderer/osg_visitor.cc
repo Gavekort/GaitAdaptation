@@ -79,11 +79,11 @@ namespace renderer
     {
       int x = (int) camera.getViewport()->x();
       int y = (int) camera.getViewport()->y();
-      int width = (int) camera.getViewport()->width(); 
+      int width = (int) camera.getViewport()->width();
       int height = (int )camera.getViewport()->height();
 
       _image->readPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE);
-      osgDB::writeImageFile(*_image, 
+      osgDB::writeImageFile(*_image,
 			    _prefix + boost::str(boost::format("%1%")%boost::io::group(std::setfill('0'),std::setw(3),_k++))+".png");
 
     }
@@ -96,7 +96,7 @@ namespace renderer
 
 
   void OsgVisitor :: enable_dump(const std::string& prefix)
-  { 
+  {
     _viewer.getCamera()->setPostDrawCallback(new ImgPostDrawCallback(prefix));
   }
 
@@ -227,25 +227,25 @@ namespace renderer
     Vec3 center(0.0f, 0.0f, 0.0f);
     float radius = 500;
     Vec3 light_position(center + Vec3(0.0f, 0.0f, 10));
-  
+
 
 
     osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene = new osgShadow::ShadowedScene;
     shadowedScene->setReceivesShadowTraversalMask(ReceivesShadowTraversalMask);
     shadowedScene->setCastsShadowTraversalMask(CastsShadowTraversalMask);
-    
+
      //    osgShadow::MinimalDrawBoundsShadowMap* sm = new
      //    osgShadow::MinimalDrawBoundsShadowMap;
     // osg::ref_ptr<osgShadow::MinimalCullBoundsShadowMap> sm = new
     //  osgShadow::MinimalCullBoundsShadowMap;
     //osg::ref_ptr<osgShadow::ShadowMap> sm = new osgShadow::ShadowMap;
-    
+
 
     // OK  osg::ref_ptr<osgShadow::ParallelSplitShadowMap> sm =
     // new osgShadow::ParallelSplitShadowMap;
     //osg::ref_ptr<osgShadow::LightSpacePerspectiveShadowMap> sm =
     // new osgShadow::LightSpacePerspectiveShadowMap;
-    
+
     //    osg::ref_ptr<osgShadow::StandardShadowMap> sm =
     //  new osgShadow::StandardShadowMap;
     osg::ref_ptr<osgShadow::ShadowTexture> sm =
@@ -299,16 +299,16 @@ namespace renderer
     {
       _prev_pos = pos;
       ref_ptr<Geode> geode(new Geode);
-      osg::ref_ptr<osg::ShapeDrawable> sphere = 
+      osg::ref_ptr<osg::ShapeDrawable> sphere =
 	new ShapeDrawable(new Sphere(osg::Vec3(pos.x(), pos.y(), 0), 0.01));
-      sphere->setColor(Vec4(1, 0, 0, 0.5)); 
+      sphere->setColor(Vec4(1, 0, 0, 0.5));
       sphere->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
       geode->addDrawable(sphere.get());
 
       _shadowed_scene->addChild(geode.get());
     }
   }
-  
+
 
   void OsgVisitor :: visit(const ode::CappedCyl& e)
   {
