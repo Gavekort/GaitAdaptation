@@ -19,7 +19,7 @@
 using namespace sferes;
 using namespace sferes::gen::evo_float;
 
-bool headless = true;
+bool headless = false;
 
 struct Params {
     struct evo_float {
@@ -51,7 +51,7 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
         template<typename Indiv>
             void eval(Indiv& ind) {
                 this->_objs.resize(2);
-                Simulation sim(0.0f, headless);
+                Simulation sim(0.0f, 10, 10, headless);
                 this->_value = sim.run(ind, 0.004f, 4);
             }
 };
@@ -59,7 +59,6 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
 int main(int argc, char **argv) {
     std::cout<<"running "<<argv[0]<<" ... try --help for options (verbose)"<<std::endl;
     //headless = atoi(argv[1]);
-
     typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
     typedef eval::Eval<Params> eval_t;

@@ -17,12 +17,13 @@ class Simulation{
         std::unique_ptr<renderer::OsgVisitor> v;
         ode::Environment env;
         robot::robot4 rob;
+        std::vector<ode::Object::ptr_t> boxes;
         bool headless;
         float x = 0;
     public:
-        Simulation(float, bool);
+        Simulation(float, int, int, bool);
         ~Simulation();
-        //void add_blocks(int, int, ode::Environment&);
+        void add_blocks(int, int);
         template<typename Indiv>
             float run(Indiv, float, int);
         template<typename Indiv>
