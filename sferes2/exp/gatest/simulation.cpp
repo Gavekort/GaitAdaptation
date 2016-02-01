@@ -13,8 +13,9 @@
 #include <renderer/osg_visitor.hh>
 
 Simulation::Simulation(const float tilt, const int count, const int size,
-        const bool headless) : env(tilt, 0.0f, 0.0f), rob(env, Eigen::Vector3d(0, 0, 0.5)){
+        const bool headless) : env(0.0f, tilt, 0.0f), rob(env, Eigen::Vector3d(0, 0, 0.5)){
     this->headless = headless;
+    this->tilt = tilt;
 
     if(!headless){
         this->v.reset(new renderer::OsgVisitor()); //assures that v is updated
@@ -28,7 +29,9 @@ Simulation::Simulation(const float tilt, const int count, const int size,
 
 Simulation::~Simulation(){
 }
-
+/* Uses a 2D gaussian to spread blocks on the surface
+ * https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
+ */
 void Simulation::add_blocks(int count, int size){
     typedef boost::mt19937 RNGType;
     RNGType rng( time(0) );
@@ -39,9 +42,12 @@ void Simulation::add_blocks(int count, int size){
     double bsize;
     for(int i = 0; i < count; ++i){
         bsize = rsize();
+        float x = rlocation();
+        float y = rlocation();
         ode::Object::ptr_t b
-            (new ode::Box(env, Eigen::Vector3d(rlocation(), rlocation(), bsize/2),
-                          10, bsize, bsize, bsize));
+            (new ode::Box(env, Eigen::Vector3d(x, y, bsize/2 + (tan(tilt)*-x)),
+                          10, bsize*2, bsize*2, bsize));
+        b->set_rotation(0.0f, -tilt, 0.0f);
         boxes.push_back(b);
         if(!headless){
             b->accept(*v);

@@ -19,6 +19,7 @@ class Simulation{
         robot::robot4 rob;
         std::vector<ode::Object::ptr_t> boxes;
         bool headless;
+        float tilt;
         float x = 0;
     public:
         Simulation(float, int, int, bool);
