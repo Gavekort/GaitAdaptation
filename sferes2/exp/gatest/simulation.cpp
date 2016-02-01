@@ -57,6 +57,7 @@ void Simulation::add_blocks(int count, int size){
         float x = rlocation() + xc; //random + gaussian skew
         float y = rlocation() + yc;
 
+        //2D gaussian
         float bsize = a*exp( -( (pow((x-xc), 2) / (2*pow(s, 2)) ) +
                     (pow((y-yc), 2) / (2*pow(s, 2)) ) ));
 
