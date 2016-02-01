@@ -51,8 +51,8 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
         template<typename Indiv>
             void eval(Indiv& ind) {
                 this->_objs.resize(2);
-                Simulation sim(0.25f, 10, 10, headless);
-                this->_value = sim.run(ind, 0.002f, 4);
+                Simulation sim(0.00f, 200, 6, headless);
+                this->_value = sim.run(ind, 0.008f, 4);
             }
 };
 

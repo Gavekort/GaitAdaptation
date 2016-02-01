@@ -53,14 +53,12 @@ float Simulation::run(Indiv ind, const float step, const int step_limit){
                 exit(EXIT_SUCCESS); //abort everything including sferes-backend
             }
         }
-
         procedure(ind, step);
     }
 
     Eigen::Vector3d pos = rob.pos();
-    float fitness = std::abs(pos(0)) + std::abs(pos(1)); //Dirty?
-    std::cout << "Fitness: " << fitness << std::endl;
-    return fitness;
+    std::cout << "Fitness: " << -pos(0) << std::endl;
+    return -pos(0);
 }
 
 template<typename Indiv>
