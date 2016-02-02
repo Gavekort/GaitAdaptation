@@ -50,7 +50,9 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
         FitZDT2()  {}
         template<typename Indiv>
             void eval(Indiv& ind) {
+                //std::unique_ptr<Simulation> sim;
                 this->_objs.resize(2);
+                //sim.reset(new Simulation(0.00f, 200, 6, headless));
                 Simulation sim(0.00f, 200, 6, headless);
                 this->_value = sim.run(ind, 0.008f, 4);
             }
@@ -61,17 +63,16 @@ int main(int argc, char **argv) {
     //headless = atoi(argv[1]);
     typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
-    typedef eval::Eval<Params> eval_t;
+    typedef eval::Parallel<Params> eval_t;
     typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
     typedef modif::Dummy<> modifier_t;
     typedef ea::Nsga2<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
     ea_t ea;
 
-    dInitODE2(0);
+
     run_ea(argc, argv, ea);
     std::cout<<"==> best fitness ="<<ea.stat<0>().best()->fit().value()<<std::endl;
     //  std::cout<<"==> mean fitness ="<<ea.stat<1>().mean()<<std::endl;
 
-    dCloseODE();
     return 0;
 }
