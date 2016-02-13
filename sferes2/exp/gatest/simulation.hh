@@ -15,8 +15,8 @@
 class Simulation{
     private:
         std::unique_ptr<renderer::OsgVisitor> v;
-        ode::Environment env;
-        robot::robot4 rob;
+        ode::Environment* env;
+        robot::robot4* rob;
         std::vector<ode::Object::ptr_t> boxes;
         bool headless;
         float tilt;
@@ -56,7 +56,7 @@ float Simulation::run(Indiv ind, const float step, const int step_limit){
         procedure(ind, step);
     }
 
-    Eigen::Vector3d pos = rob.pos();
+    Eigen::Vector3d pos = rob->pos();
     std::cout << "Fitness: " << -pos(0) << std::endl;
     return -pos(0);
 }
@@ -68,10 +68,10 @@ void Simulation::procedure(Indiv ind, const float step){
     if(!headless) {
         v->update();
     }
-    env.next_step(step);
-    rob.next_step(step);
+    env->next_step(step);
+    rob->next_step(step);
     int genptr = 0;
-    for (size_t i = 0; i < rob.servos().size() - 4; ++i){
+    for (size_t i = 0; i < rob->servos().size() - 4; ++i){
         float a = ind.data(genptr++) * 40.0f;
         float theta = ind.data(genptr++) * 1.0f;
         float b = ind.data(genptr++) * 20.0f;;
@@ -81,10 +81,10 @@ void Simulation::procedure(Indiv ind, const float step){
 
         double phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
         if(i <= 1){ //body joints only
-            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+            rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
         }else{
-            rob.servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
-            rob.servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180); //and opposite for other side
+            rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+            rob->servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180); //and opposite for other side
         }
     }
 }

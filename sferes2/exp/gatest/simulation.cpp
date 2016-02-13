@@ -13,21 +13,24 @@
 #include <renderer/osg_visitor.hh>
 
 Simulation::Simulation(const float tilt, const int count, const int size,
-        const bool headless) : env(0.0f, tilt, 0.0f), rob(env, Eigen::Vector3d(0, 0, 0.5)){
+        const bool headless){
+    dInitODE2(0);
     this->headless = headless;
     this->tilt = tilt;
 
+    env = new ode::Environment(0.0f, tilt, 0.0f);
+    rob = new robot::robot4(*env, Eigen::Vector3d(0, 0, 0.5));
+
     if(!headless){
         this->v.reset(new renderer::OsgVisitor()); //assures that v is updated
-        rob.accept(*v);
+        rob->accept(*v);
     }
 
-    env.set_gravity(0, 0, -9.81);
+    env->set_gravity(0, 0, -9.81);
     add_blocks(count, size);
 }
-
-
 Simulation::~Simulation(){
+    dCloseODE();
 }
 /* Uses a 2D gaussian to spread blocks on the surface
  * https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
@@ -68,7 +71,7 @@ void Simulation::add_blocks(int count, int size){
          *follow the slope
          */
         ode::Object::ptr_t b
-            (new ode::Box(env, Eigen::Vector3d(x, y, bsize/2 + (tan(tilt)*-x)),
+            (new ode::Box(*env, Eigen::Vector3d(x, y, bsize/2 + (tan(tilt)*-x)),
                           10, bsize*4, bsize*4, bsize)); //multiply by 4 to stretch out
 
         b->set_rotation(0.0f, -tilt, 0.0f);
@@ -77,7 +80,7 @@ void Simulation::add_blocks(int count, int size){
             b->accept(*v);
         }
         b->fix();
-        env.add_to_ground(*b);
+        env->add_to_ground(*b);
     }
 }
 
