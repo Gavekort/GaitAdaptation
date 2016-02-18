@@ -15,31 +15,35 @@
 class Simulation{
     private:
         std::unique_ptr<renderer::OsgVisitor> v;
-        ode::Environment* env;
-        robot::robot4* rob;
+        std::unique_ptr<ode::Environment> env;
+        boost::shared_ptr<robot::Robot> rob;
         std::vector<ode::Object::ptr_t> boxes;
         bool headless;
         float tilt;
         float x = 0;
     public:
-        Simulation(float, int, int, bool);
-        ~Simulation();
+        typedef boost::shared_ptr<robot::robot4> robot_t;
+        typedef boost::shared_ptr<ode::Environment> env_t;
+
+        Simulation(const robot_t&, float, int, int, bool);
         void add_blocks(int, int);
+        //template<typename Indiv, typename Robot, typename Environment>
         template<typename Indiv>
             float run(Indiv, float, int);
         template<typename Indiv>
             void procedure(Indiv, float);
 };
+
 /* Robot4 servos
  * (F)ront/(R)ear
  * (U)pper/(L)ower
  * (R)ight/(L)eft
  * 0 - main/mid SWEEP
  * 1 - mid/rear SWEEP
- * 2 - F U R SWEEP 6
- * 3 - F L R DIHED 7
- * 4 - R U R SWEEP 8
- * 5 - R L R DIHED 9
+ * 2 - F U R SWEEP
+ * 3 - F L R DIHED
+ * 4 - R U R SWEEP
+ * 5 - R L R DIHED
  * 6 - F U L SWEEP
  * 7 - F L L DIHED
  * 8 - R U L SWEEP
@@ -47,6 +51,7 @@ class Simulation{
  */
 template<typename Indiv>
 float Simulation::run(Indiv ind, const float step, const int step_limit){
+
     while(x < step_limit) {
         if(!headless){
             if(v->done()){ //If user presses escape in window

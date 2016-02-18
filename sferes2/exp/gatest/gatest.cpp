@@ -19,7 +19,9 @@
 using namespace sferes;
 using namespace sferes::gen::evo_float;
 
-bool headless = false;
+bool headless = true;
+boost::shared_ptr<robot::robot4> orob;
+boost::shared_ptr<ode::Environment> oenv;
 
 struct Params {
     struct evo_float {
@@ -53,7 +55,7 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
                 //std::unique_ptr<Simulation> sim;
                 this->_objs.resize(2);
                 //sim.reset(new Simulation(0.00f, 200, 6, headless));
-                Simulation sim(0.00f, 200, 6, headless);
+                Simulation sim(orob, 0.00f, 10, 6, headless);
                 this->_value = sim.run(ind, 0.008f, 4);
             }
 };
@@ -61,6 +63,9 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
 int main(int argc, char **argv) {
     std::cout<<"running "<<argv[0]<<" ... try --help for options (verbose)"<<std::endl;
     //headless = atoi(argv[1]);
+    dInitODE2(0);
+    oenv = boost::shared_ptr<ode::Environment>(new ode::Environment(0.0f, 0.0f, 0.0f));
+    orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.5)));
     typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
     typedef eval::Parallel<Params> eval_t;
@@ -73,6 +78,6 @@ int main(int argc, char **argv) {
     run_ea(argc, argv, ea);
     std::cout<<"==> best fitness ="<<ea.stat<0>().best()->fit().value()<<std::endl;
     //  std::cout<<"==> mean fitness ="<<ea.stat<1>().mean()<<std::endl;
-
+    dCloseODE();
     return 0;
 }
