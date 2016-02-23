@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.5)));
     typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
-    typedef eval::Eval<Params> eval_t;
+    typedef eval::Parallel<Params> eval_t;
     typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
     typedef modif::Dummy<> modifier_t;
     typedef ea::Nsga2<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
