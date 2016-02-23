@@ -15,7 +15,8 @@
 class Simulation{
     private:
         std::unique_ptr<renderer::OsgVisitor> v;
-        std::unique_ptr<ode::Environment> env;
+        //renderer::OsgVisitor v;
+        boost::shared_ptr<ode::Environment> env;
         boost::shared_ptr<robot::Robot> rob;
         std::vector<ode::Object::ptr_t> boxes;
         bool headless;
@@ -62,7 +63,7 @@ float Simulation::run(Indiv ind, const float step, const int step_limit){
     }
 
     Eigen::Vector3d pos = rob->pos();
-    std::cout << "Fitness: " << -pos(0) << std::endl;
+    //std::cout << "Fitness: " << -pos(0) << std::endl;
     return -pos(0);
 }
 
@@ -73,8 +74,8 @@ void Simulation::procedure(Indiv ind, const float step){
     if(!headless) {
         v->update();
     }
-    env->next_step(step);
     rob->next_step(step);
+    env->next_step(step);
     int genptr = 0;
     for (size_t i = 0; i < rob->servos().size() - 4; ++i){
         float a = ind.data(genptr++) * 40.0f;

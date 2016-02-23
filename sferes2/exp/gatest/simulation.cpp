@@ -13,11 +13,12 @@
 #include <renderer/osg_visitor.hh>
 
 Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
-        const int size, const bool headless){
+        const int size, const bool headless) : env(new ode::Environment(0.0f, 0.0f, 0.0f)){
     this->headless = headless;
     this->tilt = tilt;
 
-    this->env.reset(new ode::Environment(0.0f, 0.0f, 0.0f));
+//    this->env.reset(new ode::Environment(0.0f, 0.0f, 0.0f));
+
     rob = orob->clone(*env); //clone returns boost
     //this->rob.reset(srob.get()); //boost smartpointers are sooo 2010, so we dump it into std
 
@@ -28,6 +29,7 @@ Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
 
     add_blocks(count, size);
 }
+
 /* Uses a 2D gaussian to spread blocks on the surface
  * https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
  */

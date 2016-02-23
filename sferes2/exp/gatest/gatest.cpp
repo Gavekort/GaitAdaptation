@@ -25,7 +25,7 @@ boost::shared_ptr<ode::Environment> oenv;
 
 struct Params {
     struct evo_float {
-        SFERES_CONST float cross_rate = 0.5f;
+        SFERES_CONST float cross_rate = 0.2f;
         SFERES_CONST float mutation_rate = 0.1f;
         SFERES_CONST float eta_m = 15.0f;
         SFERES_CONST float eta_c = 10.0f;
@@ -37,8 +37,8 @@ struct Params {
         SFERES_CONST unsigned nb_gen = 500;
         SFERES_CONST int dump_period = 5;
         SFERES_CONST int initial_aleat = 1;
-        SFERES_CONST float coeff = 1.1f;
-        SFERES_CONST float keep_rate = 0.6f;
+        //SFERES_CONST float coeff = 1.1f;
+        //SFERES_CONST float keep_rate = 0.6f;
     };
     struct parameters {
         SFERES_CONST float min = 0.0f;
@@ -53,10 +53,12 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
         template<typename Indiv>
             void eval(Indiv& ind) {
                 //std::unique_ptr<Simulation> sim;
-                this->_objs.resize(2);
+                this->_objs.resize(1);
                 //sim.reset(new Simulation(0.00f, 200, 6, headless));
                 Simulation sim(orob, 0.00f, 10, 6, headless);
-                this->_value = sim.run(ind, 0.008f, 4);
+                float result = sim.run(ind, 0.008f, 4);
+                this->_value = result;
+                this->_objs[0] = result;
             }
 };
 
@@ -68,7 +70,7 @@ int main(int argc, char **argv) {
     orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.5)));
     typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
-    typedef eval::Parallel<Params> eval_t;
+    typedef eval::Eval<Params> eval_t;
     typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
     typedef modif::Dummy<> modifier_t;
     typedef ea::Nsga2<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
