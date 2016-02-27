@@ -17,8 +17,8 @@ namespace robot
 {
     void robot4 :: _build(Environment& env, const Vector3d& pos)
     {
-        static const double body_mass = 0.5;
-        static const double leg_mass = 0.3;
+        static const double body_mass = 0.25;
+        static const double leg_mass = 0.15;
         /*static const double body_length = 0.75;
         static const double body_width = 0.2;
         static const double body_height = 0.2;
@@ -30,17 +30,17 @@ namespace robot
         static const double wheel_mass = 0.05;*/
 
         //Robot dim definitions
-        static const double segment_width = 0.2; //width of all segments
+        static const double segment_width = 0.1; //width of all segments
 
-        static const double head_length = 0.5; //length of head
-        static const double mid_length = 0.5; //mid segment
-        static const double rear_length = 0.5; //rear segment
+        static const double head_length = 0.25; //length of head
+        static const double mid_length = 0.25; //mid segment
+        static const double rear_length = 0.25; //rear segment
 
-        static const double ufront_length = 0.45; //upper front leg
-        static const double lfront_length = 0.45; //lower front leg
+        static const double ufront_length = 0.22; //upper front leg
+        static const double lfront_length = 0.22; //lower front leg
 
-        static const double urear_length = 0.4; //upper rear leg
-        static const double lrear_length = 0.4; //lower rear leg
+        static const double urear_length = 0.2; //upper rear leg
+        static const double lrear_length = 0.2; //lower rear leg
 
         static const double ufront_stance = 2; //rotation of upper front joint
         static const double lfront_stance = -5; //lower front

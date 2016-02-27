@@ -51,11 +51,11 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
             void eval(Indiv& ind) {
                 if (this->mode() == sferes::fit::mode::view)
                 {
-                    Simulation sim(0.00f, 100, 6, false);
+                    Simulation sim(0.00f, 100, 3, false);
                     sim.run(ind, 0.004f, 30);
                 }else{
                     this->_objs.resize(1);
-                    Simulation sim(0.00f, 100, 6, true);
+                    Simulation sim(0.00f, 100, 3, true);
                     this->_objs[0] = sim.run(ind, 0.008f, 8);
                 }
             }

@@ -47,7 +47,7 @@ void Simulation::add_blocks(int count, int size){
      */
     boost::uniform_real<> loc_range(-(s-1),s-1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rlocation(rng,loc_range);
-    boost::uniform_real<> size_range(0.03, (float) size/100);
+    boost::uniform_real<> size_range(0.02, (float) size/100);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rsize(rng,size_range);
 
     for(int i = 0; i < count; ++i){
