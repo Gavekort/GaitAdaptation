@@ -19,7 +19,6 @@
 using namespace sferes;
 using namespace sferes::gen::evo_float;
 
-bool headless = false;
 
 struct Params {
     struct evo_float {
@@ -32,7 +31,7 @@ struct Params {
     };
     struct pop {
         SFERES_CONST unsigned size = 300;
-        SFERES_CONST unsigned nb_gen = 500;
+        SFERES_CONST unsigned nb_gen = 100;
         SFERES_CONST int dump_period = 5;
         SFERES_CONST int initial_aleat = 1;
         SFERES_CONST float coeff = 1.1f;
@@ -50,9 +49,15 @@ SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
         FitZDT2()  {}
         template<typename Indiv>
             void eval(Indiv& ind) {
-                this->_objs.resize(2);
-                Simulation sim(0.00f, 200, 6, headless);
-                this->_value = sim.run(ind, 0.008f, 4);
+                if (this->mode() == sferes::fit::mode::view)
+                {
+                    Simulation sim(0.00f, 100, 6, false);
+                    sim.run(ind, 0.004f, 30);
+                }else{
+                    this->_objs.resize(1);
+                    Simulation sim(0.00f, 100, 6, true);
+                    this->_objs[0] = sim.run(ind, 0.008f, 8);
+                }
             }
 };
 
@@ -61,15 +66,14 @@ int main(int argc, char **argv) {
     //headless = atoi(argv[1]);
     typedef gen::EvoFloat<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
-    typedef eval::Eval<Params> eval_t;
-    typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
+    typedef eval::Parallel<Params> eval_t;
+    typedef boost::fusion::vector<stat::ParetoFront<phen_t, Params> >  stat_t;
     typedef modif::Dummy<> modifier_t;
     typedef ea::Nsga2<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
     ea_t ea;
 
     dInitODE2(0);
     run_ea(argc, argv, ea);
-    std::cout<<"==> best fitness ="<<ea.stat<0>().best()->fit().value()<<std::endl;
     //  std::cout<<"==> mean fitness ="<<ea.stat<1>().mean()<<std::endl;
 
     dCloseODE();
