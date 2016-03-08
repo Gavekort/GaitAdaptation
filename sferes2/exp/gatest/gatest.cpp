@@ -16,49 +16,89 @@
 
 #include "simulation.hh"
 
+#include "map_elites.hpp"
+#include "fit_map.hpp"
+#include "stat_map.hpp"
+
 using namespace sferes;
 using namespace sferes::gen::evo_float;
 
 bool headless = true;
 boost::shared_ptr<robot::robot4> orob;
 boost::shared_ptr<ode::Environment> oenv;
+/*
+   struct Params {
+   struct evo_float {
+   SFERES_CONST float cross_rate = 0.2f;
+   SFERES_CONST float mutation_rate = 0.1f;
+   SFERES_CONST float eta_m = 15.0f;
+   SFERES_CONST float eta_c = 10.0f;
+   SFERES_CONST mutation_t mutation_type = polynomial;
+   SFERES_CONST cross_over_t cross_over_type = sbx;
+   };
+   struct pop {
+   SFERES_CONST unsigned size = 300;
+   SFERES_CONST unsigned nb_gen = 500;
+   SFERES_CONST int dump_period = 5;
+   SFERES_CONST int initial_aleat = 1;
+//SFERES_CONST float coeff = 1.1f;
+//SFERES_CONST float keep_rate = 0.6f;
+};
+struct parameters {
+SFERES_CONST float min = 0.0f;
+SFERES_CONST float max = 1.0f;
+};
+};*/
 
 struct Params {
-    struct evo_float {
-        SFERES_CONST float cross_rate = 0.2f;
-        SFERES_CONST float mutation_rate = 0.1f;
-        SFERES_CONST float eta_m = 15.0f;
-        SFERES_CONST float eta_c = 10.0f;
-        SFERES_CONST mutation_t mutation_type = polynomial;
-        SFERES_CONST cross_over_t cross_over_type = sbx;
+    struct ea {
+        SFERES_CONST size_t behav_dim = 2;
+        SFERES_CONST double epsilon = 0;//0.05;
+        SFERES_ARRAY(size_t, behav_shape, 64, 64);
     };
     struct pop {
-        SFERES_CONST unsigned size = 300;
-        SFERES_CONST unsigned nb_gen = 500;
-        SFERES_CONST int dump_period = 5;
-        SFERES_CONST int initial_aleat = 1;
-        //SFERES_CONST float coeff = 1.1f;
-        //SFERES_CONST float keep_rate = 0.6f;
+        // number of initial random points
+        SFERES_CONST size_t init_size = 300;
+        // size of a batch
+        SFERES_CONST size_t size = 300;
+        SFERES_CONST size_t nb_gen = 150;
+        SFERES_CONST size_t dump_period = 5;
     };
     struct parameters {
         SFERES_CONST float min = 0.0f;
         SFERES_CONST float max = 1.0f;
     };
+    struct evo_float {
+        SFERES_CONST float cross_rate = 0.25f;
+        SFERES_CONST float mutation_rate = 0.1f;
+        SFERES_CONST float eta_m = 10.0f;
+        SFERES_CONST float eta_c = 10.0f;
+        SFERES_CONST mutation_t mutation_type = polynomial;
+        SFERES_CONST cross_over_t cross_over_type = sbx;
+    };
 };
 
-
-SFERES_FITNESS(FitZDT2, sferes::fit::Fitness) {
-    public:
+FIT_MAP(FitZDT2){
+    public :
         FitZDT2()  {}
         template<typename Indiv>
             void eval(Indiv& ind) {
                 //std::unique_ptr<Simulation> sim;
-                this->_objs.resize(1);
+                //this->_objs.resize(1);
                 //sim.reset(new Simulation(0.00f, 200, 6, headless));
                 Simulation sim(orob, 0.00f, 10, 6, headless);
                 float result = sim.run(ind, 0.008f, 4);
                 this->_value = result;
-                this->_objs[0] = result;
+
+                std::vector<float> data;
+                data.push_back(ind.gen().data(6)+ind.gen().data(12));//amplitudes of joints that lift
+                data.push_back(ind.gen().data(9)+ind.gen().data(15));//amplitudes of joints that sweep
+
+                this->set_desc(data);
+                //this->_objs[0] = result;
+            }
+            bool dead(){
+                return false;
             }
 };
 
@@ -73,7 +113,7 @@ int main(int argc, char **argv) {
     typedef eval::Parallel<Params> eval_t;
     typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
     typedef modif::Dummy<> modifier_t;
-    typedef ea::Nsga2<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
+    typedef ea::MapElites<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
     ea_t ea;
 
 
