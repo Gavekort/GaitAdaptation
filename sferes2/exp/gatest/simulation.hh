@@ -3,9 +3,6 @@
 
 #include <stdlib.h> //For EXIT_SUCCESS
 
-#include <sferes/gen/evo_float.hpp>
-#include <sferes/ea/nsga2.hpp>
-
 #include <ode/environment.hh>
 #include <robot/robot4.hh>
 #include <ode/box.hh>

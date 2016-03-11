@@ -54,14 +54,14 @@ struct Params {
     struct ea {
         SFERES_CONST size_t behav_dim = 2;
         SFERES_CONST double epsilon = 0;//0.05;
-        SFERES_ARRAY(size_t, behav_shape, 64, 64);
+        SFERES_ARRAY(size_t, behav_shape, 128, 128);
     };
     struct pop {
         // number of initial random points
         SFERES_CONST size_t init_size = 300;
         // size of a batch
         SFERES_CONST size_t size = 300;
-        SFERES_CONST size_t nb_gen = 150;
+        SFERES_CONST size_t nb_gen = 400;
         SFERES_CONST size_t dump_period = 5;
     };
     struct parameters {
@@ -71,7 +71,7 @@ struct Params {
     struct evo_float {
         SFERES_CONST float cross_rate = 0.25f;
         SFERES_CONST float mutation_rate = 0.1f;
-        SFERES_CONST float eta_m = 10.0f;
+        SFERES_CONST float eta_m = 15.0f;
         SFERES_CONST float eta_c = 10.0f;
         SFERES_CONST mutation_t mutation_type = polynomial;
         SFERES_CONST cross_over_t cross_over_type = sbx;
@@ -91,8 +91,11 @@ FIT_MAP(FitZDT2){
                 this->_value = result;
 
                 std::vector<float> data;
-                data.push_back(ind.gen().data(6)+ind.gen().data(12));//amplitudes of joints that lift
-                data.push_back(ind.gen().data(9)+ind.gen().data(15));//amplitudes of joints that sweep
+                data.push_back((ind.gen().data(6)+ind.gen().data(12))/2);//amplitudes of joints that lift
+                data.push_back((ind.gen().data(9)+ind.gen().data(15))/2);//amplitudes of joints that sweep
+                //std::cout << (ind.gen().data(6)+ind.gen().data(12))/2 << std::endl;
+                //std::cout << (ind.gen().data(9)+ind.gen().data(15))/2 << std::endl;
+                //std::cout << "---------" << std::endl;
 
                 this->set_desc(data);
                 //this->_objs[0] = result;
@@ -109,16 +112,18 @@ int main(int argc, char **argv) {
     oenv = boost::shared_ptr<ode::Environment>(new ode::Environment(0.0f, 0.0f, 0.0f));
     orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.5)));
     typedef gen::EvoFloat<18, Params> gen_t;
+//    typedef gen::Sampled<18, Params> gen_t;
     typedef phen::Parameters<gen_t, FitZDT2<Params>, Params> phen_t;
     typedef eval::Parallel<Params> eval_t;
-    typedef boost::fusion::vector<stat::BestFit<phen_t, Params> >  stat_t;
+    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
     typedef modif::Dummy<> modifier_t;
     typedef ea::MapElites<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
     ea_t ea;
 
 
     run_ea(argc, argv, ea);
-    std::cout<<"==> best fitness ="<<ea.stat<0>().best()->fit().value()<<std::endl;
+  float best = ea.stat<1>().best()->fit().value();
+  std::cout<<"best fit (map_elites):" << best << std::endl;
     //  std::cout<<"==> mean fitness ="<<ea.stat<1>().mean()<<std::endl;
     dCloseODE();
     return 0;
