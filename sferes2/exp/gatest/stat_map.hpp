@@ -140,7 +140,11 @@ namespace sferes {
             ofs << offset << "    ";
             for(size_t dim = 0; dim < behav_dim; ++dim)
               ofs << posinarray[dim] / (float) behav_shape[dim] << " ";
-            ofs << " " << array(posinarray)->fit().value() << std::endl;
+            ofs << " " << array(posinarray)->fit().value() << " ";
+            for (size_t i = 0; i <= 18; i++) {
+                ofs << array(posinarray)->gen().data(i) << " ";
+            }
+            ofs << std::endl;
           }
           ++offset;
         }
