@@ -1,4 +1,3 @@
-#include "simulation.hh"
 
 #include <iostream>
 
@@ -6,14 +5,11 @@
 #include <boost/assign/list_of.hpp>
 #include "boost/random.hpp"
 #include "boost/generator_iterator.hpp"
-#include <ode/environment.hh>
-#include <robot/robot4.hh>
-#include <ode/box.hh>
-#include <ode/object.hh>
-#include <renderer/osg_visitor.hh>
+
+#include "simulation.hh"
 
 Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
-        const int size, const bool headless) : env(new ode::Environment(0.0f, 0.0f, 0.0f)){
+        const int size, const bool headless) : env(new ode::Environment(0.0f, tilt, 0.0f)){
     this->headless = headless;
     this->tilt = tilt;
 
@@ -82,3 +78,45 @@ void Simulation::add_blocks(int count, int size){
     }
 }
 
+float Simulation::run_conf(std::vector<float> config, const float step, const int step_limit){
+
+    while(x < step_limit) {
+        if(!headless){
+            if(v->done()){ //If user presses escape in window
+                exit(EXIT_SUCCESS); //abort everything including sferes-backend
+            }
+        }
+        procedure(config, step);
+    }
+
+    Eigen::Vector3d pos = rob->pos();
+    //std::cout << "Fitness: " << -pos(0) << std::endl;
+    return -pos(0);
+}
+
+void Simulation::procedure(std::vector<float> data, const float step){
+    x += step;
+    //rob.bodies()[1]->fix();
+    if(!headless) {
+        v->update();
+    }
+    rob->next_step(step);
+    env->next_step(step);
+    int genptr = 0;
+    for (size_t i = 0; i < rob->servos().size() - 4; ++i){
+        float a = data.at(genptr++) * 40.0f;
+        float theta = data.at(genptr++) * 1.0f;
+        float b = data.at(genptr++) * 20.0f;;
+        //std::cout << "Servo(" << i << "): " << a << " " << theta << " " << b << std::endl;
+        float h = 4;
+        float f = 2;
+
+        double phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
+        if(i <= 1){ //body joints only
+            rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+        }else{
+            rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+            rob->servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180); //and opposite for other side
+        }
+    }
+}
