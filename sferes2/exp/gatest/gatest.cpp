@@ -64,8 +64,8 @@ FIT_MAP(GaitOpt){
         GaitOpt()  {}
         template<typename Indiv>
             void eval(Indiv& ind) {
-                Simulation sim(orob, 0.00f, 10, 6, headless);
-                float result = sim.run(ind, 0.008f, 4);
+                Simulation sim(orob, 0.00f, 10, 6, true);
+                float result = sim.run_ind(ind, 0.008f, 4);
                 this->_value = result;
 
                 std::vector<float> data;
