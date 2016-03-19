@@ -35,7 +35,7 @@ struct Params {
     struct ea {
         SFERES_CONST size_t behav_dim = 2;
         SFERES_CONST double epsilon = 0;//0.05;
-        SFERES_ARRAY(size_t, behav_shape, 128, 128);
+        SFERES_ARRAY(size_t, behav_shape, 256, 256);
     };
     struct pop {
         // number of initial random points
@@ -64,16 +64,22 @@ FIT_MAP(GaitOpt){
         GaitOpt()  {}
         template<typename Indiv>
             void eval(Indiv& ind) {
-                Simulation sim(orob, 0.00f, 10, 6, true);
-                float result = sim.run_ind(ind, 0.008f, 4);
-                this->_value = result;
+                if (this->mode() == sferes::fit::mode::view){
+                    Simulation sim(orob, 0.00f, 100, 10, false);
+                    sim.run_ind(ind, 0.004f, 8);
+                }else{
+                    Simulation sim(orob, 0.00f, 100, 10, true);
+                    float result = sim.run_ind(ind, 0.008f, 8);
+                    this->_value = result;
 
-                std::vector<float> data;
-                data.push_back((ind.gen().data(6)+ind.gen().data(12))/2);//amplitudes of joints that lift
-                data.push_back((ind.gen().data(9)+ind.gen().data(15))/2);//amplitudes of joints that sweep
+                    std::vector<float> data;
+                    data.push_back((ind.gen().data(6)+ind.gen().data(12))/2);//amplitudes of joints that lift
+                    data.push_back((ind.gen().data(9)+ind.gen().data(15))/2);//amplitudes of joints that sweep
 
-                this->set_desc(data);
+                    this->set_desc(data);
+                }
             }
+
         bool dead(){
             return false;
         }
