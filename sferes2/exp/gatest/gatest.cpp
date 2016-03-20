@@ -65,7 +65,7 @@ FIT_MAP(GaitOpt){
         template<typename Indiv>
             void eval(Indiv& ind) {
                 if (this->mode() == sferes::fit::mode::view){
-                    Simulation sim(orob, 0.00f, 100, 10, false);
+                    Simulation sim(orob, 0.00f, 100, 30, false);
                     sim.run_ind(ind, 0.004f, 8);
                 }else{
                     Simulation sim(orob, 0.00f, 100, 10, true);

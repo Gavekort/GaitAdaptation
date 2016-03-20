@@ -13,10 +13,7 @@ Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
     this->headless = headless;
     this->tilt = tilt;
 
-//    this->env.reset(new ode::Environment(0.0f, 0.0f, 0.0f));
-
     rob = orob->clone(*env); //clone returns boost
-    //this->rob.reset(srob.get()); //boost smartpointers are sooo 2010, so we dump it into std
 
     if(!headless){
         this->v.reset(new renderer::OsgVisitor()); //assures that v is updated
@@ -31,9 +28,9 @@ Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
  */
 void Simulation::add_blocks(int count, int size){
 
-    float xc = -3; //skew gauss and location
+    float xc = -0.3; //skew gauss and location
     float yc = 0;
-    float s = 4; //spread gauss and location
+    float s = 1; //spread gauss and location
 
     typedef boost::mt19937 RNGType;
     RNGType rng( time(0) );
@@ -42,9 +39,9 @@ void Simulation::add_blocks(int count, int size){
      * The reason we subtract 1 is to chop off the "skirts" of the gauss, prevent the creation
      * of miniscule boxes which does nothing but impact performance.
      */
-    boost::uniform_real<> loc_range(-(s-1),s-1);
+    boost::uniform_real<> loc_range(-(s-0.1),s-0.1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rlocation(rng,loc_range);
-    boost::uniform_real<> size_range(0.02, (float) size/100);
+    boost::uniform_real<> size_range(0.002, (float) size/1000);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rsize(rng,size_range);
 
     for(int i = 0; i < count; ++i){
