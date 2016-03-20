@@ -42,7 +42,7 @@ namespace robot
         static const double urear_length = 0.2; //upper rear leg
         static const double lrear_length = 0.2; //lower rear leg
 
-        static const double ufront_stance = 2; //rotation of upper front joint
+        static const double ufront_stance = -0.5; //rotation of upper front joint
         static const double lfront_stance = -5; //lower front
 
         static const double urear_stance = 0; //upper rear
@@ -98,10 +98,11 @@ namespace robot
             s1->set_axis(ode::Ax12::DIHEDRAL, Eigen::Vector3d(0,0,1));
 
             Object::ptr_t l11
-                (new CappedCyl(env, pos + Vector3d(0,
+                (new CappedCyl(env, pos + Vector3d((ufront_length/2)*ufront_stance,
                                                    left_right *  ufront_length,
                                                    -lfront_length/2),
                                leg_mass, segment_width/2, lfront_length));
+            l11->set_rotation(0,ufront_stance,0);
             _bodies.push_back(l11);
 
 
@@ -111,7 +112,7 @@ namespace robot
                                                0),
                            *l1, *l11));
             _servos.push_back(s2);
-            s2->set_axis(ode::Ax12::SWEEP, Eigen::Vector3d(0,0,1));
+            s2->set_axis(ode::Ax12::SWEEP, Eigen::Vector3d(1,0,ufront_stance));
 
             //tail-segment
             Object::ptr_t bl1
