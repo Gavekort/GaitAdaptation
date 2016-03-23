@@ -35,7 +35,7 @@ struct Params {
     struct ea {
         SFERES_CONST size_t behav_dim = 2;
         SFERES_CONST double epsilon = 0;//0.05;
-        SFERES_ARRAY(size_t, behav_shape, 256, 256);
+        SFERES_ARRAY(size_t, behav_shape, 128, 128);
     };
     struct pop {
         // number of initial random points
@@ -65,11 +65,11 @@ FIT_MAP(GaitOpt){
         template<typename Indiv>
             void eval(Indiv& ind) {
                 if (this->mode() == sferes::fit::mode::view){
-                    Simulation sim(orob, 0.00f, 100, 30, false);
-                    sim.run_ind(ind, 0.004f, 8);
+                    Simulation sim(orob, 0.00f, 150, 15, false);
+                    sim.run_ind(ind, 0.004f, 6);
                 }else{
-                    Simulation sim(orob, 0.00f, 100, 10, true);
-                    float result = sim.run_ind(ind, 0.008f, 8);
+                    Simulation sim(orob, 0.00f, 150, 15, true);
+                    float result = sim.run_ind(ind, 0.004f, 6);
                     this->_value = result;
 
                     std::vector<float> data;
@@ -89,8 +89,8 @@ int main(int argc, char **argv) {
     std::cout<<"running "<<argv[0]<<" ... try --help for options (verbose)"<<std::endl;
     dInitODE2(0);
     oenv = boost::shared_ptr<ode::Environment>(new ode::Environment(0.0f, 0.0f, 0.0f));
-    orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.5)));
-    typedef gen::EvoFloat<18, Params> gen_t;
+    orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.2)));
+    typedef gen::EvoFloat<19, Params> gen_t;
     typedef phen::Parameters<gen_t, GaitOpt<Params>, Params> phen_t;
     typedef eval::Parallel<Params> eval_t;
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
