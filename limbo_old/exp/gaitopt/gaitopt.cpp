@@ -72,7 +72,7 @@ struct Params {
         BO_DYN_PARAM(float, alpha);
     };
 
-struct archiveparams {
+    struct archiveparams {
 
         struct elem_archive {
             std::vector<float> params;
@@ -85,9 +85,9 @@ struct archiveparams {
             {
                 assert(lhs.size() == 2 && rhs.size() == 2);
                 int i = 0;
-                while (i < 1 && round(lhs[i] * 4) == round(rhs[i] * 4)) //lhs[i]==rhs[i])
+                while (i < 1 && round(lhs[i] * 40) == round(rhs[i] * 40)) //lhs[i]==rhs[i])
                     i++;
-                return round(lhs[i] * 4) < round(rhs[i] * 4); //lhs[i]<rhs[i];
+                return round(lhs[i] * 40) < round(rhs[i] * 40); //lhs[i]<rhs[i];
             }
         };
         typedef std::map<std::vector<float>, elem_archive, classcomp> archive_t;
@@ -103,6 +103,9 @@ namespace global {
     std::string res_dir;
     boost::shared_ptr<robot::robot4> orob;
     boost::shared_ptr<ode::Environment> oenv;
+    float tilt = 0.0f;
+    int count = 0;
+    int size = 0;
 };
 ///---------------------------
 
@@ -128,21 +131,21 @@ struct fit_eval_map {
             return -1000;
 
         for(auto data : Params::archiveparams::archive.at(key).params){
-        std::cout << data << " ";
+            std::cout << data << " ";
         }
         std::cout << std::endl;
 
         //Simu simu = Simu(Params::archiveparams::archive.at(key).controller, global::global_robot, global::brokenLegs, false, 5, 1, global::global_env->angle);
         #ifdef GRAPHIC
-        Simulation sim(global::orob, -0.05f, 100, 10, false);
+        Simulation sim(global::orob, global::tilt, global::count, global::size, false);
         #else
-        Simulation sim(global::orob, 0.00f, 10, 6, true);
+        Simulation sim(global::orob, global::tilt, global::count, global::size, true);
         #endif
-        float result = sim.run_conf(Params::archiveparams::archive.at(key).params, 0.008f, 4);
+        float result = sim.run_conf(Params::archiveparams::archive.at(key).params, 0.004f, 6);
         //if (simu.covered_distance() < 0 || simu.covered_distance() > 2.5) {
 
         //    std::cout << simu.covered_distance() << " measurement seems wrong, set to zero" << std::endl;
-            return result;
+        return result;
         //}
 
         //return simu.covered_distance() * limbo::misc::gaussian_rand(0.95, 0.1);
@@ -165,7 +168,7 @@ load_archive(std::string archive_name){
                     break;
                 float data;
                 monFlux >> data;
-               // std::cout << data << " ";
+                // std::cout << data << " ";
                 if (i == 1 || i == 2){
                     candidate[i-1] = data; //I on the other hand have duplicated the candidate data
                 }
@@ -177,7 +180,7 @@ load_archive(std::string archive_name){
             }
             //std::cout << " |Size| " << candidate << std::endl;
             if (elem.params.size() == 19) {
-                std::cout << "Candidate: " << candidate.at(0) << " " << candidate.at(1) << " : " << elem.fit << std::endl;
+               //    std::cout << "Candidate: " << candidate.at(0) << " " << candidate.at(1) << " : " << elem.fit << std::endl;
                 archive[candidate] = elem;
             }
         }
@@ -210,6 +213,13 @@ int main(int argc, char** argv)
     else
         Params::kf_maternfivehalfs::set_l(0.4); //0.4 (antoine value)
 
+    if (argc > 3){
+        global::tilt = atof(argv[3]);
+        global::count = atoi(argv[4]);
+        global::size = atoi(argv[5]);
+    }
+
+
     Params::ucb::set_alpha(0.05);
     Params::maxiterations::set_n_iterations(20);
     srand(time(NULL));
@@ -217,6 +227,7 @@ int main(int argc, char** argv)
     typedef kernel_functions::MaternFiveHalfs<Params> Kernel_t;
     typedef inner_optimization::ExhaustiveSearchArchive<Params> InnerOpt_t;
     typedef boost::fusion::vector<stopping_criterion::MaxIterations<Params>, stopping_criterion::MaxPredictedValue<Params>> Stop_t;
+    //typedef stopping_criterion::MaxIterations<Params> Stop_t;
     typedef mean_functions::MeanArchive_Map<Params> Mean_t;
     typedef boost::fusion::vector<stat::Acquisitions<Params>, stat::StatTransferts<Params>> Stat_t;
 
@@ -227,7 +238,7 @@ int main(int argc, char** argv)
     dInitODE();
 
     global::oenv = boost::shared_ptr<ode::Environment>(new ode::Environment(0.0f, 0.0f, 0.0f));
-    global::orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*global::oenv, Eigen::Vector3d(0, 0, 0.5)));
+    global::orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*global::oenv, Eigen::Vector3d(0, 0, 0.2)));
 
     BOptimizer<Params, model_fun<GP_t>, init_fun<Init_t>, acq_fun<Acqui_t>, inneropt_fun<InnerOpt_t>, stat_fun<Stat_t>, stop_fun<Stop_t>> opt;
     global::res_dir = opt.res_dir();
@@ -237,9 +248,6 @@ int main(int argc, char** argv)
     opt.optimize(fit_eval_map<Params>());
     float val = opt.best_observation();
     result = opt.best_sample().transpose();
-
-        Simulation sim(global::orob, 0.00f, 10, 6, false);
-        sim.run_conf(Params::archiveparams::archive.at(result).params, 0.008f, 4);
 
     std::cout << val << " res  " << result.transpose() << std::endl;
 

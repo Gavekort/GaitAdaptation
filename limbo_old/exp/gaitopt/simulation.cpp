@@ -13,10 +13,7 @@ Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
     this->headless = headless;
     this->tilt = tilt;
 
-//    this->env.reset(new ode::Environment(0.0f, 0.0f, 0.0f));
-
     rob = orob->clone(*env); //clone returns boost
-    //this->rob.reset(srob.get()); //boost smartpointers are sooo 2010, so we dump it into std
 
     if(!headless){
         this->v.reset(new renderer::OsgVisitor()); //assures that v is updated
@@ -31,9 +28,9 @@ Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
  */
 void Simulation::add_blocks(int count, int size){
 
-    float xc = -3; //skew gauss and location
+    float xc = -0.4; //skew gauss and location
     float yc = 0;
-    float s = 4; //spread gauss and location
+    float s = 0.5; //spread gauss and location
 
     typedef boost::mt19937 RNGType;
     RNGType rng( time(0) );
@@ -42,9 +39,9 @@ void Simulation::add_blocks(int count, int size){
      * The reason we subtract 1 is to chop off the "skirts" of the gauss, prevent the creation
      * of miniscule boxes which does nothing but impact performance.
      */
-    boost::uniform_real<> loc_range(-(s-1),s-1);
+    boost::uniform_real<> loc_range(-(s-0.1),s-0.1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rlocation(rng,loc_range);
-    boost::uniform_real<> size_range(0.02, (float) size/100);
+    boost::uniform_real<> size_range(0.002, (float) size/1000);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rsize(rng,size_range);
 
     for(int i = 0; i < count; ++i){
@@ -106,12 +103,23 @@ void Simulation::procedure(std::vector<float> data, const float step){
     for (size_t i = 0; i < rob->servos().size() - 4; ++i){
         float a = data.at(genptr++) * 40.0f;
         float theta = data.at(genptr++) * 1.0f;
-        float b = data.at(genptr++) * 20.0f;;
+        float b = (data.at(genptr++) * 40.0f) - 20.0f;
         //std::cout << "Servo(" << i << "): " << a << " " << theta << " " << b << std::endl;
         float h = 4;
-        float f = 2;
+        float f = data.back() * 2.0f; //last element adjusts frequency to a max of 2
+
+        if(a < 5.0f){ //If amplitude is below threshold
+            a = 0.0f; //set to zero
+        }
+
 
         double phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
+
+        if(i == 6 || i == 9){ //if outer joints
+            phase = phase * 1.8f; //amplify phase to prevent stunted mobility of robot4
+        }
+
+
         if(i <= 1){ //body joints only
             rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
         }else{
