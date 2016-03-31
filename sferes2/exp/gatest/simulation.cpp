@@ -77,18 +77,33 @@ void Simulation::add_blocks(int count, int size){
 
 float Simulation::run_conf(std::vector<float> config, const float step, const int step_limit){
 
-    while(x < step_limit) {
+    Eigen::Vector3d rotation;
+    bool flipped = false;
+
+    while(x < step_limit && !flipped) {
         if(!headless){
             if(v->done()){ //If user presses escape in window
                 exit(EXIT_SUCCESS); //abort everything including sferes-backend
             }
         }
         procedure(config, step);
+        rotation = rob->rot();
+
+        //std::cout << "Rot: " << rotation(0) * (180/M_PI) << std::endl;
+        if(abs(rotation(0) * (180/M_PI)) > 90){
+            flipped = true;
+            break;
+        }
     }
 
     Eigen::Vector3d pos = rob->pos();
+
     //std::cout << "Fitness: " << -pos(0) << std::endl;
-    return -pos(0);
+    if(!flipped){
+        return -pos(0);
+    }else{
+        return 0.0f;
+    }
 }
 
 void Simulation::procedure(std::vector<float> data, const float step){
@@ -101,27 +116,31 @@ void Simulation::procedure(std::vector<float> data, const float step){
     env->next_step(step);
     int genptr = 0;
     for (size_t i = 0; i < rob->servos().size() - 4; ++i){
+        double phase = 0;
         float a = data.at(genptr++) * 40.0f;
         float theta = data.at(genptr++) * 1.0f;
         float b = (data.at(genptr++) * 40.0f) - 20.0f;
         //std::cout << "Servo(" << i << "): " << a << " " << theta << " " << b << std::endl;
         float h = 4;
+        float s = data.at(data.size() - 1) * 40; //spread
         float f = data.back() * 2.0f; //last element adjusts frequency to a max of 2
 
-        if(a < 5.0f){ //If amplitude is below threshold
-            a = 0.0f; //set to zero
+        if(a > 5.0f){ //If amplitude is below threshold
+            phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
         }
 
 
-        double phase = a*tanh(h*sin((f*M_PI)*(x+theta))) + b;
 
-        if(i == 6 || i == 9){ //if outer joints
-            phase = phase * 1.8f; //amplify phase to prevent stunted mobility of robot4
-        }
-
+        //if(i == 6 || i == 9){ //if outer joints
+        //    phase = phase * 1.8f; //amplify phase to prevent stunted mobility of robot4
+        //}
 
         if(i <= 1){ //body joints only
             rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
+        }else if(i == 3 || i == 5){
+            phase = phase * 1.8f; //amplify phase to prevent stunted mobility of robot4
+            rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, (phase - s) * M_PI/180);
+            rob->servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, (phase + s) * M_PI/180); //and opposite for other side
         }else{
             rob->servos()[i]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180);
             rob->servos()[i+4]->set_angle(ode::Servo::DIHEDRAL, phase * M_PI/180); //and opposite for other side

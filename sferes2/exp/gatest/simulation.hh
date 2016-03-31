@@ -50,18 +50,34 @@ class Simulation{
 template<typename Indiv>
 float Simulation::run_ind(Indiv ind, const float step, const int step_limit){
     std::vector<float> data = ind.data();
-    while(x < step_limit) {
+
+    Eigen::Vector3d rotation;
+    bool flipped = false;
+
+    while(x < step_limit && !flipped) {
         if(!headless){
             if(v->done()){ //If user presses escape in window
                 exit(EXIT_SUCCESS); //abort everything including sferes-backend
             }
         }
         procedure(data, step);
+        rotation = rob->rot();
+
+//        std::cout << "Rot: " << rotation(0) * (180/M_PI) << std::endl;
+        if(abs(rotation(0) * (180/M_PI)) > 90){
+            flipped = true;
+            break;
+        }
     }
 
     Eigen::Vector3d pos = rob->pos();
+
     //std::cout << "Fitness: " << -pos(0) << std::endl;
-    return -pos(0);
+    if(!flipped){
+        return -pos(0);
+    }else{
+        return 0.0f;
+    }
 }
 
 

@@ -35,7 +35,7 @@ struct Params {
     struct ea {
         SFERES_CONST size_t behav_dim = 2;
         SFERES_CONST double epsilon = 0;//0.05;
-        SFERES_ARRAY(size_t, behav_shape, 128, 128);
+        SFERES_ARRAY(size_t, behav_shape, 256, 256);
     };
     struct pop {
         // number of initial random points
@@ -43,7 +43,7 @@ struct Params {
         // size of a batch
         SFERES_CONST size_t size = 300;
         SFERES_CONST size_t nb_gen = 100000;
-        SFERES_CONST size_t dump_period = 5;
+        SFERES_CONST size_t dump_period = 100;
     };
     struct parameters {
         SFERES_CONST float min = 0.0f;
@@ -75,6 +75,7 @@ FIT_MAP(GaitOpt){
                     std::vector<float> data;
                     data.push_back((ind.gen().data(6)+ind.gen().data(12))/2);//amplitudes of joints that lift
                     data.push_back((ind.gen().data(9)+ind.gen().data(15))/2);//amplitudes of joints that sweep
+                    //data.push_back(ind.gen().data(19));
 
                     this->set_desc(data);
                 }
@@ -90,7 +91,7 @@ int main(int argc, char **argv) {
     dInitODE2(0);
     oenv = boost::shared_ptr<ode::Environment>(new ode::Environment(0.0f, 0.0f, 0.0f));
     orob = boost::shared_ptr<robot::robot4>(new robot::robot4(*oenv, Eigen::Vector3d(0, 0, 0.2)));
-    typedef gen::EvoFloat<19, Params> gen_t;
+    typedef gen::EvoFloat<20, Params> gen_t;
     typedef phen::Parameters<gen_t, GaitOpt<Params>, Params> phen_t;
     typedef eval::Parallel<Params> eval_t;
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
