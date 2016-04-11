@@ -19,8 +19,9 @@ Simulation::Simulation(const robot_t& orob, const float tilt, const int count,
         this->v.reset(new renderer::OsgVisitor()); //assures that v is updated
         rob->accept(*v);
     }
-
-    add_blocks(count, size);
+    if(count > 0 && size > 0){
+        add_blocks(count, size);
+    }
 }
 
 /* Uses a 2D gaussian to spread blocks on the surface

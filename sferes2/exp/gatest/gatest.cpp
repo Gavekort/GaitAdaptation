@@ -35,7 +35,7 @@ struct Params {
     struct ea {
         SFERES_CONST size_t behav_dim = 2;
         SFERES_CONST double epsilon = 0;//0.05;
-        SFERES_ARRAY(size_t, behav_shape, 256, 256);
+        SFERES_ARRAY(size_t, behav_shape, 128, 128);
     };
     struct pop {
         // number of initial random points
@@ -66,10 +66,11 @@ FIT_MAP(GaitOpt){
             void eval(Indiv& ind) {
                 if (this->mode() == sferes::fit::mode::view){
                     Simulation sim(orob, 0.00f, 150, 15, false);
-                    sim.run_ind(ind, 0.004f, 6);
-                }else{
-                    Simulation sim(orob, 0.00f, 150, 15, true);
                     float result = sim.run_ind(ind, 0.004f, 6);
+                    std::cout << "Fitness: " << result << std::endl;
+                }else{
+                    Simulation sim(orob, 0.00f, 0, 0, true);
+                    float result = sim.run_ind(ind, 0.006f, 6);
                     this->_value = result;
 
                     std::vector<float> data;
