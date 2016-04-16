@@ -65,13 +65,23 @@ FIT_MAP(GaitOpt){
         template<typename Indiv>
             void eval(Indiv& ind) {
                 if (this->mode() == sferes::fit::mode::view){
-                    Simulation sim(orob, 0.00f, 150, 15, false);
-                    float result = sim.run_ind(ind, 0.004f, 6);
-                    std::cout << "Fitness: " << result << std::endl;
+                    Simulation sim1(orob, 0.00f, 0, 0, false);
+                    float result = sim1.run_ind(ind, 0.006f, 6);
+                    Simulation sim2(orob, 0.00f, 0, 0, false);
+                    float result2 = sim2.run_ind(ind, 0.0065f, 6);
+                    std::cout << "Fitness: " << result << " " << result2 << std::endl;
                 }else{
-                    Simulation sim(orob, 0.00f, 0, 0, true);
-                    float result = sim.run_ind(ind, 0.006f, 6);
-                    this->_value = result;
+                    Simulation sim1(orob, 0.00f, 150, 15, true);
+                    float result1 = sim1.run_ind(ind, 0.006f, 6);
+                    Simulation sim2(orob, 0.00f, 150, 15, true);
+                    float result2 = sim2.run_ind(ind, 0.0065f, 6);
+
+                    //Choose worst of the two
+                    if(result1 < result2){
+                        this->_value = result1;
+                    }else{
+                        this->_value = result2;
+                    }
 
                     std::vector<float> data;
                     data.push_back((ind.gen().data(6)+ind.gen().data(12))/2);//amplitudes of joints that lift
