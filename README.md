@@ -1,6 +1,6 @@
 # GaitAdaptation
 
-This is the code belonging to my master thesis "Evolving Gait Patterns using Evolutionary Algorithms and Intelligent Trial and Error".
+This is the code belonging to my master thesis "Adapting Gait Patterns using Evolutionary Algorithms and Intelligent Trial and Error".
 
 I would like to thank the Resibots team, the authors of Sferes2, Robdyn and Limbo. The frameworks used can be found here:
 * https://github.com/sferes2/sferes2
